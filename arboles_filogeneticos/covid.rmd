@@ -1,0 +1,133 @@
+---
+title: "Ejercicios básicos de R -- S3"
+author: "Saúl Gabriel Nolasco Cen"
+date: "Lunes 27 de abril de 2026"
+output: html_document
+---
+# Cargar los virus 
+```{r}
+virus <- c(
+  "FJ797658.1",
+  "M10098.1",
+  "M59389.1",
+  "NR_024570.1",
+  "MW558256.1",
+  "NC_012059.1"
+)
+```
+
+## 1. Cargar las librerías que necesitaremos
+```{r, eval = FALSE}
+library(Biostrings)
+library(seqinr)
+library(adegenet)
+library(ape)
+library(ggtree)
+library(DECIPHER)
+library(viridis)
+library(ggplot2)
+```
+
+## 2. Obtener las secuencias
+```{r}
+covid_seq <- ape::read.GenBank(
+  virus,
+  species.names = TRUE,
+  as.character = FALSE
+)
+```
+
+## 3. Estructura del DNABin
+```{r, echo=FALSE}
+covid_seq
+```
+
+## 4. Concentrar en un archivo las secuencias
+```{r}
+ape::write.FASTA(
+  covid_seq,
+  file = "covid_seq.fasta"
+)
+```
+
+## 5. Cargar las secuencias
+```{r}
+dna <- Biostrings::readDNAStringSet("covid_seq.fasta")
+```
+
+## 6. Alineamiento de secuencias
+```{r}
+alignment <- DECIPHER::AlignSeqs(dna)
+```
+
+## 7. Visualizar el resultado
+```{r}
+alignment
+```
+
+## 8. Guardar el resultado
+```{r}
+Biostrings::writeXStringSet(
+  alignment,
+  filepath = "covid_alignment.fasta"
+)
+```
+
+## 9. Obtener el archivo
+```{r}
+aligned <- Biostrings::readDNAStringSet("covid_alignment.fasta")
+```
+
+## 10. Matriz de distancia
+```{r}
+aligned_dnabin <- ape::as.DNAbin(aligned)
+dist_matrix <- as.matrix(ape::dist.dna(
+  aligned_dnabin,
+  pairwise.deletion = TRUE
+))
+```
+
+## 11. Visualizar Matriz
+```{r}
+image(
+  as.matrix(dist_matrix),
+  main = "Matriz de distancia",
+  col = gray.colors(10)
+)
+```
+
+## 12. Crear árbol
+```{r}
+tree <- ape::njs(dist_matrix)
+```
+
+## 13. Plot del árbol
+```{r}
+plot(
+  tree,
+  main = "Árbol filogenético"
+)
+ape::add.scale.bar()
+```
+
+## 14. Plot con ggtree
+```{r}
+options(ignore.negative.edge = TRUE)
+ggtree::ggtree(tree)
+```
+
+## 15. Visualizar alineamiento
+```{r}
+aligned_table <- data.frame(
+  Secuencia = names(alignment),
+  Alineamiento = as.character(alignment)
+)
+
+aligned_table
+```
+
+## 16. Combinar árbol y alineamiento
+```{r}
+ggtree::ggtree(tree) +
+  ggtree::geom_tiplab()
+```

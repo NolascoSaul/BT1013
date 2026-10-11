@@ -1,0 +1,89 @@
+---
+title: "Ejercicios básicos de R"
+author: 
+- "Saúl Gabriel Nolasco Cen"
+date: "Lunes 6 de abril de 2026"
+output: pdf_document
+---
+**Ejercicio 1:**
+Crear un vector *x* con los datos 10, 11, 13, -1, 6, 3
+```{r}
+x <- c(10, 11, 13, -1, 6, 3)
+x
+```
+
+**Ejercicio 2:**
+Calcula estadísticas simples de *x*. Calcular la media, la desviación estándar y la varianza. Crear un objeto (vector) con el nombre *est.x* en el que guardar los 3 estadísticos.
+```{r}
+est_x <- c(mean(x), sd(x), median(x))
+est_x
+```
+
+**Ejercicio 3:**
+Escribe un programa R para crear una secuencia de números del 20 al 50 y encuentre la media de los números del 20 al 60 y la suma de los números del 51 al 91.
+```{r}
+sec <- 20:50
+sec
+mean <- mean(20:60)
+mean
+sum <- sum(51:91)
+sum
+```
+
+**Ejercicio 4:**
+Escribe un programa R para crear un vector que contenga 10 valores enteros aleatorios entre -100 y +50.
+```{r}
+random <- sample(-100:50, 10)
+random
+```
+
+**Ejercicio 5:**
+Escribe un programa R para obtener los primeros 10 números de Fibonacci
+```{r}
+fufb <- numeric(10)
+fufb[1] <- fufb[2] <- 1
+for (i in 3:10) {
+  fufb[i] <- fufb[i - 1] + fufb[i - 2]
+}
+fufb
+```
+
+**Ejercicio 6:**
+Escribe un programa R para encontrar el valor máximo y mínimo de un vector dado.
+```{r}
+vec <- c(10, 20, 30, 4, 50, -60)
+min(vec)
+max(vec)
+```
+
+**Ejercicio 7:**
+Escribe una función R para multiplicar dos vectores de tipo entero y longitud n, de la misma longitud ambos.
+```{r}
+multiplica <- function(vec1, vec2) {
+  vec1 * vec2
+}
+multiplica(c(10, 20), c(3, 4))
+```
+
+**Ejercicio 8:**
+Escribe una función R para contar el valor específico en un vector dado.
+```{r}
+cuenta <- function(v, target) {
+  count <- 0
+  for (i in seq_along(v)) {
+    if (v[i] == target) count <- count + 1
+  }
+  count
+}
+cuenta(c(10, 20, 10, 7, 24, 7, 5), 7)
+```
+
+**Ejercicio 9:**
+Escribe una función en R para extraer cada enésimo elemento de un vector dado. 
+```{r}
+v <- 1:100
+enesimo <- function(vec, n) {
+  vec[seq(1, length(v), n)]
+}
+enesimo(v, 5)
+```

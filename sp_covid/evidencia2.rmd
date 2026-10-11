@@ -1,0 +1,90 @@
+---
+title: "Análisis de virus en 20 humanos"
+author: "Saúl Gabriel Nolasco Cen"
+date: "30-04-2026"
+output: html_document
+---
+## Librerías
+```{r}
+library(Biostrings)
+library(seqinr)
+library(adegenet)
+library(ape)
+library(ggtree)
+library(DECIPHER)
+library(viridis)
+library(ggplot2)
+library(knitr)
+```
+
+## 1. 20 variantes del COVID en distintos países
+```{r}
+virus <- c(
+  "MZ472095.1", "MZ363983.1", "MT079851.1", "PX063729.1", "MZ544366.1",
+  "MT350282.1", "OQ050422.1", "MW466799.1", "LC633754.1", "MT956911.1",
+  "OL989073.1", "ON531991.1", "ON531991.1", "MT844029.1", "MT466071.1",
+  "MW467418.1", "MT706050.1", "MT470100.1", "OM002608.1", "PZ297803.1"
+)
+
+seq <- read.GenBank(virus, species.names = TRUE, as.character = FALSE)
+ape::write.FASTA(seq, file = "covid.fasta")
+virus_seq <- readDNAStringSet("covid.fasta")
+```
+
+## 2. Calcular la longitud de las secuencias
+```{r}
+seq_lengths <- width(virus_seq)
+seq_lengths_named <- data.frame(
+  Secuencia = names(virus_seq),
+  Longitud = seq_lengths
+)
+
+seq_lengths_named
+```
+
+## 3. Gráfica bases de ADN
+```{r}
+nucleotide_composition <- function(dna) {
+  bases <- c("A", "C", "G", "T")
+  chars <- strsplit(as.character(dna), "")[[1]]
+  counts <- sapply(bases, function(base) sum(chars == base))
+  percentages <- round((counts / length(chars)) * 100, 2)
+  list(counts = counts, percentages = percentages)
+}
+
+compositions <- lapply(virus_seq, nucleotide_composition)
+
+composition_table <- data.frame(
+  Virus = names(virus_seq),
+  A = sapply(compositions, function(x) x$percentages["A"]),
+  C = sapply(compositions, function(x) x$percentages["C"]),
+  G = sapply(compositions, function(x) x$percentages["G"]),
+  T = sapply(compositions, function(x) x$percentages["T"])
+)
+
+composition_data <- reshape2::melt(composition_table, id.vars = "Virus")
+
+ggplot(composition_data, aes(x = Virus, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(
+    title = "Comparación de bases de ADN",
+    x = "Virus",
+    y = "Porcentaje (%)"
+  ) +
+  scale_fill_manual(values = c("A" = "blue", "C" = "green", "G" = "red", "T" = "yellow"))
+```
+
+## 4. Análisis jerárquico
+```{r}
+aligned <- AlignSeqs(virus_seq)
+aligned_dnabin <- as.DNAbin(aligned)
+
+# Calcular la matriz de distancia
+dist_matrix <- dist.dna(aligned_dnabin, pairwise.deletion = TRUE)
+
+tree <- nj(dist_matrix)
+
+plot(tree, main = "Árbol Filogenético de SARS-CoV-2 por Países")
+ape::add.scale.bar()
+```

@@ -1,0 +1,105 @@
+---
+title: "Ejercicios básicos de R -- S3"
+author: "Saúl Gabriel Nolasco Cen"
+date: "Domingo 19 de abril de 2026"
+output: pdf_document
+---
+# Secuencias utilizadas
+
+```{r}
+virus <- "CATCATCAATAATATACCTTATTTTGGATTGAAGCCAATATGATAATGAGGGGGTGGAGTTTGTGACGTGGCGCGGGGCGTGGGAACGGGGCGGGTGACGTAGTAGTG"
+bacteria <- "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGCTTCTGAACTGGTTACCTGCCGTGAGTAAATTAAAATTTTATTGA"
+ave <- "GCCCCCATAGCTTAACCCACAAAGCATGGCACTGAAGATGCCAAGATGGTACCTACTATACCTGTGGGCAAAAGACTTAGTCCTAACCTTTCTATTGGTTTTTGCT"
+perro <- "TTTTTTTTTTTTTTTTTTTTCTCGTTTTTTTTTTTTTTTTTCTTTTTTTCTTTCTTTTTTTTTTCCGTTCTGTGAGCCACTGGGCGGACCTCCCGTGTATCTGAGT"
+humano <- "ATGGTGCACCTGACTCCTGTGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAGGTGAACGTGGATGAAGTTGGTGGTGAGGCCCTGGGCAGGCTGCTGGTGGTCTACCCTTGG"
+
+secuencias <- c(
+  Virus = virus, Bacteria = bacteria,
+  Ave = ave, Perro = perro, Humano = humano
+)
+```
+
+# Funciones utilizadas
+
+```{r}
+size_dna <- function(dna) {
+  nchar(dna)
+}
+
+nucleotide_composition <- function(dna) {
+  bases <- c("A", "C", "G", "T")
+  chars <- strsplit(dna, "")[[1]]
+  counts <- sapply(bases, function(base) sum(chars == base))
+  percentages <- round((counts / length(chars)) * 100, 2)
+  list(counts = counts, percentages = percentages)
+}
+
+gc_content <- function(dna) {
+  comp <- nucleotide_composition(dna)$percentages
+  round(comp["G"] + comp["C"], 2)
+}
+
+complementary_strand <- function(dna) {
+  chartr("ACGT", "TGCA", dna)
+}
+```
+
+# Resultados
+
+## 1. Tamaño de cada secuencia
+```{r, echo=FALSE}
+for (nombre in names(secuencias)) {
+  cat("Secuencia:", nombre, "\n")
+  cat("Tamaño:", size_dna(secuencias[nombre]), "nucleótidos\n\n")
+}
+```
+
+## 2. Composición de nucleótidos (%)
+```{r, echo=FALSE}
+for (nombre in names(secuencias)) {
+  comp <- nucleotide_composition(secuencias[nombre])
+
+  cat("Secuencia:", nombre, "\n")
+  cat("Conteo de nucleótidos:\n")
+  print(comp$counts)
+  cat("Porcentaje de nucleótidos:\n")
+  print(comp$percentages)
+  cat("\n")
+}
+```
+
+## 3. Contenido de GC (%)
+```{r, echo=FALSE}
+for (nombre in names(secuencias)) {
+  cat("Secuencia:", nombre, "\n")
+  cat("Contenido de GC:", gc_content(secuencias[nombre]), "%\n\n")
+}
+```
+
+## 4. Secuencia complementaria de cada organismo
+```{r, echo=FALSE}
+for (nombre in names(secuencias)) {
+  cat("Secuencia:", nombre, "\n")
+  cat("Original:       ", secuencias[nombre], "\n")
+  cat("Complementaria: ", complementary_strand(secuencias[nombre]), "\n\n")
+}
+```
+
+## 5. Gráfica comparativa de la composición de nucléotidos
+```{r, echo=FALSE}
+matriz_comp <- sapply(secuencias, function(seq) {
+  nucleotide_composition(seq)$percentages
+})
+
+barplot(
+  matriz_comp,
+  beside = TRUE,
+  col = c("lightblue", "lightcoral", "lightgreen", "gold"),
+  legend.text = c("A", "C", "G", "T"),
+  args.legend = list(x = "topright", inset = 0.02, bty = "n"),
+  main = "Comparación de la composición de nucleótidos",
+  xlab = "Secuencias",
+  ylab = "Porcentaje (%)",
+  ylim = c(0, 70)
+)
+```
